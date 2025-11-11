@@ -1,0 +1,49 @@
+#θεμα 8
+from sklearn.linear_model import LinearRegression
+from math import sqrt
+import statistics
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import KFold
+from sklearn.preprocessing import PolynomialFeatures
+import numpy as np
+import pandas as pd
+
+data = pd.read_csv("forestfires.csv")
+data = data.sample(frac = 1).reset_index(drop = True)
+#----------------------------------------
+#10-fold cross validation
+#i) ερώτημα
+kf = KFold(n_splits=10)
+
+print("\nΜοντέλο γραμμικής παλινδρόμισης: area = b1 temp + b2 wind + b3 rain + bo\n")
+allRMSE = np.empty(shape = [0,1])
+testNumber = 0
+testNumber += 1
+lm = LinearRegression(fit_intercept = True)
+estimatedmodel = lm.fit(data.loc[:,['temp','wind','rain']],data.loc[:,['area']])
+print("\nΕκτιμιμενοι συντελεστές: \n")
+print(" b1= ",estimatedmodel.coef_[0][0] , sep='')
+print(" b2= ",estimatedmodel.coef_[0][1] , sep = '')
+print(" b3= ",estimatedmodel.coef_[0][2] , sep = '')
+print(" b0= ",estimatedmodel.intercept_,sep = '')
+predictedExpenditure = estimatedmodel.predict(data.loc[:,['temp','wind','rain']])
+rmse = sqrt(mean_squared_error(data.loc[:,['area']],predictedExpenditure))
+print("Μέσο τετραγωνικό σφάλμα: ",rmse,sep = '')
+#------------------------------------------
+#ii)
+small_fire = data[data["area"]<3.2]
+print("Μοντελο παλινδρομισης για area<3.2")
+indep=small_fire.loc[:,['temp','wind','rain']]
+depend=small_fire.loc[:,['area']]
+estm2 = lm.fit(indep,depend)
+print("Συντελεστες small fire: ")
+print(" b1= ",estm2.coef_[0][0] , sep='')
+print(" b2= ",estm2.coef_[0][1] , sep = '')
+print(" b3= ",estm2.coef_[0][2] , sep = '')
+print(" b0= ",estm2.intercept_,sep = '')
+predexp = estm2.predict(small_fire.loc[:,['temp','wind','rain']])
+rmse2 = sqrt(mean_squared_error(small_fire.loc[:,['area']],predexp))
+print("Μεσο τετραγωνικο σφαλμα",rmse2)
+#---------------------------------------
+#iii) επειδη το RMSE στην πρωτη παλινδρομηση ειναι 63.239578 ενω στην δευτερη το RMSE που ειναι 0.82 συμπερενουμε οτι στην δευτερη
+#παλινδρομιση η προβλεψη ειναι πιο αξιοπιστη.
