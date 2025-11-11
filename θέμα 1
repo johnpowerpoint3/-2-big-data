@@ -1,0 +1,52 @@
+#Θεμα 1 python
+from sklearn import decomposition
+import matplotlib.pyplot as plt
+import pandas as pd
+import numpy as np
+from sklearn.decomposition import PCA
+
+
+comnames = pd.read_csv("communities_namesfinal.csv")
+comdata = pd.read_csv("communities_data.csv")
+#Αντιστοιχιση ονοματων απο το names στο data
+col_list = comnames.iloc[:,0].tolist()
+comdata.columns=col_list
+
+#Διαγραφη @attibute και τυπου μεταβλητης
+comdata.columns=(comdata.columns.str.replace('@attribute','',regex=False).str.replace('numeric','',regex=False).str.replace('string','',regex=False).str.strip())
+#διαγραφη μη συνεχών τιμών 1 ερωτημα
+
+comdata = comdata.iloc[:,5:]
+#διαγραφη γραμμων με εστω ενα ? 2
+comdata = comdata[~comdata.apply(lambda row: row.astype(str).str.contains(r'\?').any(),axis=1)]
+#--------------------------------------------------
+#PCA ερωτημα α)
+pca = decomposition.PCA(n_components=2)
+pca.fit(comdata)
+pcacomdata = pca.fit_transform(comdata)
+prinscompdata = pd.DataFrame(data=pcacomdata,columns=['pc1','pc2'])
+print("Οι πρώτες κύριες δυο συνηστώσες: ")
+print(prinscompdata)
+#εμφανιση ιδιοτιμων
+print("-------------------------------")
+print("Ιδιοτιμές: ")
+eigenvalues = pca.explained_variance_
+print(eigenvalues)
+#εμφανιση ιδιοδιανυσματων b)
+eigenvectors = pca.components_
+print("--------------------------------")
+print("Ιδιοδιανύσματα: ")
+eigenveclist = eigenvectors.tolist()
+index=[1,2,3,len(eigenveclist[0])-1,len(eigenveclist[0])-2,len(eigenveclist[0])-3]
+print("Ιδιοδιανυσμα 1:[ ")
+for i in index:
+  print(eigenveclist[0][i])
+print("]")
+print("Ιδιοδιανυσμα 2:[ ")
+for i in index:
+  print(eigenveclist[1][i])
+print("]")
+#-------------------------------------------------------
+#γ)
+for i, var_ratio in enumerate(pca.explained_variance_ratio_):
+  print(f"PC{i+1}:{var_ratio:.4f}")
