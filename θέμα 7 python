@@ -1,0 +1,49 @@
+#θεμα 7
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+
+# Read data
+data = pd.read_csv("communities+and+crime.csv")
+
+# Clean column names
+data.columns = data.columns.str.strip()
+
+# Separate target (y) and features (X)
+y = data['ViolentCrimesPerPop'].values
+X = data.drop(columns=['ViolentCrimesPerPop']).values
+
+# Add intercept term
+X = np.column_stack((np.ones(X.shape[0]), X))
+
+# Hyperparameters
+alpha = 0.01
+iterations = 3000
+m = len(y)
+n = X.shape[1]
+
+# Initialize parameters randomly between -0.5 and 0.5
+beta = np.random.uniform(-0.5, 0.5, n)
+cost_history = np.zeros(iterations)
+
+# Stochastic Gradient Descent
+for iter in range(iterations):
+    cost = 0
+    indices = np.random.permutation(m)
+    for i in indices:
+        xi = X[i, :]
+        yi = y[i]
+        y_pred = np.dot(xi, beta)
+        error = y_pred - yi
+        beta -= alpha * error * xi
+        cost += error ** 2
+    cost_history[iter] = cost / (2 * m)
+
+print("Final Beta Coefficients:\n", beta)
+
+# Plot cost history
+plt.plot(range(1, iterations + 1), cost_history, color='purple', linewidth=2)
+plt.title("Learning Rate Plot (SGD)")
+plt.xlabel("Number of Iterations")
+plt.ylabel("Cost Function")
+plt.show()
